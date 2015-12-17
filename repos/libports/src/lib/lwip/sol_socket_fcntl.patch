@@ -1,0 +1,10 @@
+--- a/src/api/sockets.c
++++ b/src/api/sockets.c
+@@ -2551,6 +2551,7 @@
+   switch (cmd) {
+   case F_GETFL:
+     ret = netconn_is_nonblocking(sock->conn) ? O_NONBLOCK : 0;
++     ret|=O_RDWR;
+     break;
+   case F_SETFL:
+     if ((val & ~O_NONBLOCK) == 0) {

@@ -1,0 +1,111 @@
+#
+# \brief  test echo_server
+# \author Mohammad Hamad
+# \date   2015-10-21
+#
+
+
+#
+# Build
+#
+
+set build_components {
+	core init
+	drivers/timer drivers/nic
+	server/comm_server
+	test/lwip/echo/server/libc_comm
+	test/lwip/echo/server/comm_srv_client
+	
+}
+
+build $build_components
+
+create_boot_directory
+
+#
+# Generate config
+#
+
+set config {
+<config verbose="yes">
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="RAM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="IO_PORT"/>
+		<service name="CAP"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+		<service name="SIGNAL"/>
+	</parent-provides>
+	<default-route>
+		<any-service> <parent/> <any-child/> </any-service>
+	</default-route>
+	<start name="timer">
+		<resource name="RAM" quantum="2M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+	<start name="nic_drv">
+		<resource name="RAM" quantum="8M"/>
+		<provides><service name="Nic"/></provides>	
+	</start>
+	<start name="comm_server">
+		<resource name="RAM" quantum="30M"/>
+		<provides> <service name="COMM_SERVER"/> </provides>
+	</start>
+	<start name="echo_server_1">
+		<binary  name="echo_server"/>
+		<resource name="RAM" quantum="16M"/>
+		<config>
+			<arg  value="echo_server_1"/>
+			<arg  value="2121"/>
+			<libc stdout="/dev/log" stderr="/dev/log">
+				<vfs> <dir name="dev"> <log/> </dir> </vfs>
+			</libc>
+		</config>
+	</start>  
+	<start name="echo_server_2">
+		<binary  name="echo_server"/>
+		<resource name="RAM" quantum="16M"/>
+		<config>
+			<arg  value="echo_server_2"/>
+			<arg  value="2020"/>
+			<libc stdout="/dev/log" stderr="/dev/log">
+				<vfs> <dir name="dev"> <log/> </dir> </vfs>
+			</libc>
+		</config>
+	</start> 
+	<start name="echo_rpc_server">
+		<resource name="RAM" quantum="16M"/>
+		<config>
+			<libc stdout="/dev/log" stderr="/dev/log">
+				<vfs> <dir name="dev"> <log/> </dir> </vfs>
+			</libc>
+		</config>
+	</start>   
+</config>
+}
+
+install_config $config
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	core init timer
+	ld.lib.so libc.lib.so lwip.lib.so
+	comm_server echo_server echo_rpc_server
+	nic_drv
+	libm.lib.so
+}
+
+build_boot_image $boot_modules
+
+
+run_genode_until forever
+

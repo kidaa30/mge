@@ -1,0 +1,17 @@
+
+--- a/src/include/lwip/sockets.h
++++ b/src/include/lwip/sockets.h
+@@ -304,6 +304,13 @@
+ #define F_SETFL 4
+ #endif
+ 
++/*mohammad hamad*/
++
++#ifndef O_RDWR
++#define O_RDWR 2
++#endif
++
++
+ /* File status flags and file access modes for fnctl,
+    these are bits in an int. */
+ #ifndef O_NONBLOCK

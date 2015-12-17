@@ -26,7 +26,7 @@
 
 #include <base/printf.h>
 
-
+#define LENGTH 100
 #define TRUE 1
 
 void read_msg(int file);
@@ -74,44 +74,34 @@ int main(int argc , char** argv)
 			PDBG("ERROR: accept!\n");
 		else
 			{
-				int j = 0;
-				char * txt = " from srever packet sender: hi there\n";
+				
+				char * txt = " from srever  : hi there \n";
 				int w=write(msgsock,txt,strlen(txt));
 				if (w <0)
 					PDBG("ERROR: write!\n");
-				read_msg(msgsock);
-				 
+				int readed = 0;
+				int remein=LENGTH;
+				int r ; 
+				memset(rbuf, 0,LENGTH);
+				while(readed < remein ){
+					
+					r = read(msgsock,rbuf,remein);
+					if (s == -1) {
+						PDBG("ERROR: while reading!\n");
+						return -1;
+					}
+					/* end of the file */
+					if (r==0 )
+						break;
+					readed+=r;
+					remein-=r;
+					printf("%s", rbuf);
+					memset(rbuf, 0,r);
+				}
+				
 			}
 		close(msgsock);
 		
 	}
-}
-
-void read_msg(int file)
-{
-	FILE *f ;
-	f = fdopen(file,"r+");
-	if(f==NULL)
-	{
-		printf("error in file\n");
-		perror("dopen");
-		fclose(f);
-	}
-	int c ;
-	while((c= fgetc(f))){
-		if (c==-1) {
-			fclose(f);
-			return;
-		}
-		printf("%c",c); 
-		if (c=='\n') {
-			char * t = "get the text \n";
-			int r =write(file,t,strlen(t));
-			if (r <0)
-				printf("ERROR: write!\n");
-		}
-		
-	}
-
 }
 
